@@ -1,0 +1,7 @@
+Command:
+@('food','12.50','Lunch','') | python main.py
+
+Result:
+Expense Tracker
+Enter a blank category to finish.
+Category: Amount: Description: Category: Total: 12.50

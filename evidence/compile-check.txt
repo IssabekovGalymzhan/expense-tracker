@@ -1,0 +1,5 @@
+Command:
+python -m compileall expenses.py storage.py main.py tests
+
+Result:
+Compilation completed without errors.

@@ -12,11 +12,15 @@ def main() -> None:
         category = input("Category: ").strip()
         if not category:
             break
-        amount = float(input("Amount: "))
-        description = input("Description: ").strip()
-        add_expense(expenses, category, amount, description)
+        try:
+            amount = input("Amount: ")
+            description = input("Description: ").strip()
+            add_expense(expenses, category, amount, description)
+        except ValueError as error:
+            print(f"Invalid expense: {error}")
+            continue
 
-    print(f"Total: {total_expenses(expenses):.2f}")
+    print(f"Total: {total_expenses(expenses)}")
 
 
 if __name__ == "__main__":

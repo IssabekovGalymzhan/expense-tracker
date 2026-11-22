@@ -2,6 +2,6 @@ Command:
 python -m unittest discover -s tests -v
 
 Result:
-Ran 6 tests in 0.015s
+Ran 9 tests in 0.010s
 
 OK

@@ -1,0 +1,8 @@
+Check 1:
+Select-String -Path .\main.py -Pattern "storage|save_expenses|load_expenses"
+Result: no output; main.py did not use storage.py before the fix.
+
+Check 2:
+python -c "from expenses import add_expense; add_expense([], 'food', 'NaN')"
+Result before fix: decimal.InvalidOperation.
+Result after fix: ValueError: Amount must be a finite number.

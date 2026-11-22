@@ -1,25 +1,26 @@
 # AI Reflection
 
-I used ChatGPT/Codex on November 21, 2026 to help structure this software-engineering
-audit. The assistant received the assignment requirements, the repository structure,
-the source files and the actual output of commands run in the repository. I asked for a
-read-only risk review before accepting changes, because the assignment required human
-verification of AI findings.
+I used ChatGPT/Codex and Claude on November 22, 2026 while reviewing a small Python
+Expense Tracker for Assignment 05. I gave the assistants the assignment requirements,
+the repository structure and the outputs of commands that I ran locally. I asked for
+read-only risk suggestions before accepting any code changes.
 
-The most useful suggestion was to treat money as a correctness risk and to use decimal
-values instead of binary floating-point values. This led to a focused improvement in
-the domain model and a test that verifies exact two-decimal totals. A second useful
-finding was that raw JSON loading could fail with an unclear exception when the file was
-malformed. I added input validation and a test for malformed JSON.
+The most useful findings were that the command-line entry point did not call
+`storage.py`, and that the value `NaN` caused an unhandled `decimal.InvalidOperation`.
+I personally reproduced both findings in PowerShell. I then checked the changed source
+and ran the full test suite again. The final suite passed nine tests, including a test
+that proves CLI persistence and a test that rejects NaN and infinity.
 
-One weak suggestion was to rely on pytest immediately. The environment did not allow
-the package installation, so I did not claim that pytest had run. I changed the tests to
-Python's standard unittest module and recorded the limitation in the AI-use record.
+Claude also helped clarify that a blank `Select-String` result means the command
+completed without matches, not that the terminal froze. I recorded that advice as a
+useful process suggestion and checked it against the visible PowerShell prompt.
 
-I personally inspected the baseline code, checked the diff, ran the baseline five-test
-suite and the final six-test suite, and reviewed the acceptance criteria after the
-changes. The test results changed the release decision to CONDITIONAL rather than GO:
-the core behavior is verified, but linting, type checking, CI and full CLI testing remain
-unimplemented. The `AGENTS.md` file improved the process by making safe commands,
-forbidden actions and review gates explicit. The next improvement would be a small CI
-workflow with static checks and an end-to-end command-line test.
+One unsupported AI candidate was SQL injection: the project has no SQL, database or
+query interface. One plausible but unverified candidate was data loss from concurrent
+writers; I did not claim it was confirmed because I ran only single-user tests.
+
+The repository instructions improved the process by defining safe commands, forbidden
+operations and review gates. The final decision remains CONDITIONAL because static
+analysis, CI and concurrent multi-user storage are outside the verified scope. Before a
+production release, I would add a linter, type checker, CI workflow and a locking or
+database-based storage design.

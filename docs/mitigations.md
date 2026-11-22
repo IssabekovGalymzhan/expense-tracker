@@ -1,19 +1,18 @@
 # Mitigation Records
 
-## M1 - Exact money and input validation
-
-- Related risks: R1 and R2.
-- Change: replaced baseline `float` amounts with quantized `Decimal` values; blank,
-  non-numeric, zero and negative amounts are rejected.
-- Verification: `test_total_expenses_uses_decimal_money` and
-  `test_add_expense_rejects_invalid_values` pass.
-- Residual risk: the project does not implement currency conversion or locale-specific
-  number parsing.
-
-## M2 - Validated JSON loading
+## M1 - Reject non-finite amounts
 
 - Related risk: R3.
-- Change: `storage.py` catches file/JSON errors, requires a list, validates each record
-  and reports the record index in a `ValueError`.
-- Verification: `test_load_rejects_malformed_json` and the round-trip test pass.
-- Residual risk: filesystem permissions and disk-full failures still depend on the host.
+- Change: `Expense` now rejects `NaN`, positive infinity and negative infinity with a
+  clear `ValueError`.
+- Verification: `test_add_expense_rejects_non_finite_values` passes.
+- Residual risk: locale-specific number formats are not supported.
+
+## M2 - Persist CLI records
+
+- Related risk: R4.
+- Change: `main.py` loads existing records from `expenses.json` and saves each valid new
+  expense through `storage.py`.
+- Verification: `test_main_saves_expenses_to_storage` passes.
+- Residual risk: concurrent multi-user writes are not supported; this remains
+  plausible/unverified for the single-user assignment scope.

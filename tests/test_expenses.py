@@ -1,7 +1,11 @@
+from contextlib import redirect_stdout
+from io import StringIO
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from expenses import Expense, add_expense, total_by_category, total_expenses
+from main import main
 from storage import load_expenses, save_expenses
 
 
@@ -19,6 +23,11 @@ class ExpenseTests(unittest.TestCase):
         for category, amount in (("food", 0), ("food", -1), ("", 5)):
             with self.assertRaises(ValueError):
                 add_expense([], category, amount)
+
+    def test_add_expense_rejects_non_finite_values(self) -> None:
+        for amount in ("NaN", "Infinity", "-Infinity"):
+            with self.assertRaises(ValueError):
+                add_expense([], "food", amount)
 
     def test_total_expenses_uses_decimal_money(self) -> None:
         expenses = [Expense("food", "10.10"), Expense("transport", "5.55")]
@@ -48,6 +57,37 @@ class ExpenseTests(unittest.TestCase):
         try:
             with self.assertRaises(ValueError):
                 load_expenses(path)
+        finally:
+            if path.exists():
+                path.unlink()
+
+    def test_main_saves_expenses_to_storage(self) -> None:
+        path = Path("main-test-expenses.json")
+
+        try:
+            with patch("main.DATA_PATH", path), patch(
+                "builtins.input",
+                side_effect=["food", "12.50", "Lunch", ""],
+            ):
+                main()
+
+            self.assertEqual(load_expenses(path), [Expense("food", "12.50", "Lunch")])
+        finally:
+            if path.exists():
+                path.unlink()
+
+    def test_main_rejects_nan_without_crashing(self) -> None:
+        path = Path("main-nan-test-expenses.json")
+        output = StringIO()
+
+        try:
+            with patch("main.DATA_PATH", path), patch(
+                "builtins.input",
+                side_effect=["food", "NaN", "ignored description", ""],
+            ), redirect_stdout(output):
+                main()
+
+            self.assertIn("Amount must be a finite number", output.getvalue())
         finally:
             if path.exists():
                 path.unlink()

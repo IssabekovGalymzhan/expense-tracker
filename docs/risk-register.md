@@ -1,14 +1,20 @@
 # Risk Register
 
-Score = likelihood × impact. Scores are from 1 to 9.
+Score = likelihood x impact. Allowed categories are correctness, maintainability,
+security, dependency and agent operations.
 
-| ID | Category | Cause -> event -> consequence | Component | Classification and evidence | L | I | Score | Mitigation | Owner | Verification | Residual risk |
-|---|---|---|---|---|---:|---:|---:|---|---|---|---|
-| R1 | Correctness | Binary floating point -> rounding error -> incorrect money total | `expenses.py` | Confirmed in baseline: amount was stored as `float`; inspected in baseline commit `d0adfc8` | 2 | 3 | 6 | Use `Decimal` quantized to cents | Student | Decimal total test | External currency conversion is out of scope |
-| R2 | Correctness | Empty category accepted -> unusable record -> unreliable category reports | `expenses.py` | Confirmed in baseline: no category validation; baseline code inspection | 2 | 2 | 4 | Reject blank categories and trim whitespace | Student | Invalid-input test | Category naming rules remain simple |
-| R3 | Reliability | Untrusted JSON shape or syntax -> load exception -> application failure | `storage.py` | Confirmed in baseline: raw `json.loads` and dataclass construction had no friendly validation | 2 | 3 | 6 | Validate JSON type, records and errors | Student | Malformed JSON test | File permissions and disk failures remain possible |
-| R4 | Agent operations | No repository instruction file -> agent may use unsafe workflow -> unreviewed changes | Repository root | Confirmed: `AGENTS.md` did not exist at baseline | 2 | 3 | 6 | Add `AGENTS.md` with forbidden actions and review gates | Student | Manual file review | Agents may still ignore instructions |
-| R5 | Maintainability | Input loop and presentation remain in one entry point -> future UI changes touch CLI code | `main.py` | Confirmed by code inspection; no duplicated conditional logic requiring a pattern was found | 2 | 2 | 4 | Keep domain logic outside `main.py`; defer larger UI split | Student | Repository map review | CLI remains intentionally small |
-| R6 | Verification | No lint/type-check configuration -> defects may escape unit tests | Repository | Confirmed: no linter or type-check command is configured | 2 | 2 | 4 | Record as a readiness gap and run compile check | Student | `compileall` command | Static analysis is still absent |
+| ID | Category | Classification | Cause -> event -> consequence | Evidence | L | I | Score | Mitigation / status |
+|---|---|---|---|---|---:|---:|---:|---|
+| R1 | Correctness | Confirmed | Float money values -> rounding error -> incorrect total | Baseline `expenses.py` in commit `d0adfc8` stored `float` | 2 | 3 | 6 | Replaced with `Decimal`; verified by exact-total test |
+| R2 | Correctness | Confirmed | Empty category -> unusable record -> unreliable report | Baseline code accepted blank category | 2 | 2 | 4 | Reject and trim blank categories; verified by test |
+| R3 | Correctness | Confirmed | `NaN` or infinity -> invalid comparison -> uncaught `InvalidOperation` | Local command reproduced `decimal.InvalidOperation` | 2 | 3 | 6 | Reject non-finite values as `ValueError`; verified by test |
+| R4 | Correctness | Confirmed | CLI never called storage -> records lost after exit | `Select-String` returned no match in `main.py`; code inspection confirmed no save call | 2 | 3 | 6 | Load at startup and save after each valid expense; verified by test |
+| R5 | Correctness | Confirmed | Malformed JSON -> load exception -> application failure | Baseline `storage.py` used raw JSON loading | 2 | 3 | 6 | Validate JSON and report `ValueError`; verified by test |
+| R6 | Maintainability | Confirmed | CLI input and orchestration remain in one entry point -> future UI changes touch `main.py` | Code inspection; no justified pattern was found | 2 | 2 | 4 | Keep domain and storage modules separate; defer larger UI split |
+| R7 | Agent operations | Confirmed | Missing instructions at baseline -> unsafe agent workflow -> unreviewed changes | `AGENTS.md` was absent in baseline commit | 2 | 3 | 6 | Added safe commands, prohibitions and review gates |
+| R8 | Agent operations | Confirmed | No lint/type-check/CI configuration -> defects may escape tests | Repository inspection found no static checks | 2 | 2 | 4 | Record as readiness gap; run compile check |
+| R9 | Security | Plausible/unverified | Concurrent writers -> last write wins -> one record could be lost | No concurrency test was run; single-user CLI is the current scope | 1 | 2 | 2 | Add file-locking or database storage if multi-user use is required |
+| R10 | Security | Unsupported | SQL injection -> database compromise | No SQL, database or query interface exists in this repository | 1 | 3 | 3 | Do not treat as a confirmed risk |
 
-Top two corrective risks: R1 and R3. R2 is also addressed by the same domain validation change.
+Top two corrective risks were R3 and R4. Both are now mitigated and verified. R9 remains
+plausible/unverified and R10 is explicitly unsupported.

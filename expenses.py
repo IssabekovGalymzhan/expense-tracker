@@ -23,6 +23,9 @@ class Expense:
         except (InvalidOperation, ValueError):
             raise ValueError("Amount must be a valid number") from None
 
+        if not amount.is_finite():
+            raise ValueError("Amount must be a finite number")
+
         if amount <= 0:
             raise ValueError("Amount must be greater than zero")
 
